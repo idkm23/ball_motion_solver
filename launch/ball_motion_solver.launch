@@ -1,0 +1,8 @@
+<launch>
+
+    <node name="ball_motion_solver" pkg="ball_motion_solver" type="ball_motion_solver_node" required="true" output="screen" />
+
+  <!-- local publishers of republished compressed-transported images from glass -->
+    <node name="local_scene_compressed_to_raw" type="republish" pkg="image_transport" output="screen" args="compressed in:=/ball_mover/camera/image raw out:=/ball_mover/camera/image" />
+
+</launch>
