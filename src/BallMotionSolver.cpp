@@ -10,7 +10,7 @@ const double BallMotionSolver::PI = 3.1415926535897;
 BallMotionSolver::BallMotionSolver() {
 
     img_sub = n.subscribe<sensor_msgs::Image>
-        ("/ball_mover/camera/image"/*"/usb_cam/image_raw"*/, 10, &BallMotionSolver::img_callback, this);
+        ("/ball_mover/camera/image"/*"/usb_cam/image_raw"*/, 10, &BallMotionSolver::img_callback_transform, this);
     ball_motion_pub = n.advertise<geometry_msgs::Point>("/ball_mover/changeBallCoordBy", 1000);
 
     /* webcam-friendly hsv values 
@@ -45,6 +45,8 @@ BallMotionSolver::BallMotionSolver() {
 
 }
 
+
+
 void BallMotionSolver::pub_motion(double moveX, double moveY) {
     geometry_msgs::Point point;
     point.x = moveX;
@@ -60,6 +62,12 @@ void BallMotionSolver::pub_motion(double moveX, double moveY) {
 void BallMotionSolver::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
 {
     ROS_INFO("Entered img_callback");
+
+    if(skipFrame++ > 3) {
+        skipFrame = 0;
+        return;
+    }    
+
     cv_bridge::CvImagePtr cv_ptr;
     try 
     {   

@@ -29,9 +29,11 @@ private:
 
     int iLowH, iHighH, iLowS, iHighS, iLowV, iHighV;
     const static double PI;
+    int skipFrame; //skips frames to try and reduce the glass from crashing
  
 public:
     BallMotionSolver();
+    void img_callback_transform(const sensor_msgs::ImageConstPtr&);
     void img_callback(const sensor_msgs::ImageConstPtr&);
     void pub_motion(double, double);
     void calculate_direction_of_motion(int, int, int, int);
