@@ -1,14 +1,16 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(ball_motion_solver)
+project(box_therapy)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  std_msgs
   sensor_msgs
   geometry_msgs
   cv_bridge
+  myo_raw
 )
 
 ## System dependencies are found with CMake's conventions
@@ -106,16 +108,25 @@ include_directories(
 
 ## Declare a cpp executable
  add_executable(ball_motion_solver_node src/ball_motion_solver_node.cpp)
+ add_executable(hand_presence_solver_node src/hand_presence_solver_node.cpp)
+ add_executable(republish_geom_node src/republish_geom_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
  add_dependencies(ball_motion_solver_node ${catkin_EXPORTED_TARGETS})
+ add_dependencies(hand_presence_solver_node ${catkin_EXPORTED_TARGETS})
+ add_dependencies(republish_geom_node ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(ball_motion_solver_node
    ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
  )
-
+ target_link_libraries(hand_presence_solver_node
+   ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
+ )
+ target_link_libraries(republish_geom_node
+   ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
+ ) 
 #############
 ## Install ##
 #############

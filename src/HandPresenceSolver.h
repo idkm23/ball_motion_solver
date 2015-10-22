@@ -1,11 +1,11 @@
-#ifndef BALLMOTIONSOLVER_H 
-#define BALLMOTIONSOLVER_H
+#ifndef HANDPRESENCESOLVER_H 
+#define HANDPRESENCESOLVER_H
 
 #include <ros/ros.h>
 
 //image transport/conversion libraries
 #include <sensor_msgs/Image.h>
-#include <geometry_msgs/Point.h>
+#include <std_msgs/Bool.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 
@@ -34,8 +34,6 @@ private:
 public:
     BallMotionSolver();
     void img_callback(const sensor_msgs::ImageConstPtr&);
-    void pub_motion(double, double);
-    void calculate_direction_of_motion(int, int, int, int);
 };
 
 #endif

@@ -1,4 +1,4 @@
-#include "BallMotionSolver.h"
+#include "HandPresenceSolver.h"
 
 using namespace cv;
 
@@ -11,7 +11,7 @@ BallMotionSolver::BallMotionSolver() {
 
     img_sub = n.subscribe<sensor_msgs::Image>
         ("/ball_mover/camera/image"/*"/usb_cam/image_raw"*/, 10, &BallMotionSolver::img_callback, this);
-    ball_motion_pub = n.advertise<geometry_msgs::Point>("/ball_mover/changeBallCoordBy", 1000);
+    ball_motion_pub = n.advertise<std_msgs::Bool>("/ball_mover/isHandPresent", 1000);
 
     /* webcam-friendly hsv values 
     iLowH = 0;
@@ -45,16 +45,6 @@ BallMotionSolver::BallMotionSolver() {
 
 }
 
-
-
-void BallMotionSolver::pub_motion(double moveX, double moveY) {
-    geometry_msgs::Point point;
-    point.x = moveX;
-    point.y = moveY;
-
-    ball_motion_pub.publish(point);
-}
- 
 /**
  * img_sub's callback, TODO
  * @param ros_img, image of object in a ros msg
@@ -103,51 +93,24 @@ void BallMotionSolver::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
     double dM01 = oMoments.m01;
     double dM10 = oMoments.m10;
     double dArea = oMoments.m00;
+    
+    std_msgs::Bool isHandPresent;
+    isHandPresent.data = false;
 
-    if (dArea > 60000) {
+    if (dArea > 62000) {
         //finds the center of the hand
         int posX = dM10 / dArea;
         int posY = dM01 / dArea;
 
-        calculate_direction_of_motion(posX, posY, cropped_scene.cols/2, cropped_scene.rows/2);
-
         cvtColor(imgThresholded, imgThresholded, COLOR_GRAY2BGR);
 
         ellipse( imgThresholded, Point(posX, posY), Size(10, 10), 360, 0, 360, Scalar(100, 100, 255), 5, 8);
-    }
+        isHandPresent.data = true;
+    } 
+    ball_motion_pub.publish(isHandPresent);
     
     imshow("camera", imgThresholded);
     imshow("camera_raw", cropped_scene);
     waitKey(1);
 }
-
-/**
- * Finds the direction of motion and publishes it
- * @param x1, y1 coordinates for the center of the hand
- * @param x2, y2 coordinates for the virtual box
- */
-void BallMotionSolver::calculate_direction_of_motion(int x1, int y1, int x2, int y2) {
-    double netY = y2 - y1;
-    double netX = x2 - x1;
-    
-    double theta;
-    if(netX != 0) {
-        theta = atan(netY / netX);
-    } else {
-        theta = PI/2 * netY / abs(netY);
-    }
-
-    if(netX < 0) {
-        theta += PI;
-    }
-
-    double moveX = cos(theta), moveY = sin(theta);
-
-    ROS_INFO("x: %f, y: %f theta: %f", moveX, moveY, theta);
-
-    pub_motion(moveX, moveY);
-}
-
-
-
 

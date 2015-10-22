@@ -1,7 +1,7 @@
 <launch>
 
-    <node name="ball_motion_solver" pkg="box_therapy" type="ball_motion_solver_node" required="true" output="screen" />
-    <node name="republish_geom" pkg="box_therapy" type="republish_geom_node" required="true" output="screen" />
+    <node name="hand_presence_solver" pkg="box_therapy" type="hand_presence_solver_node" required="true" output="screen" />
+    <node name="republish_geometry" pkg="box_therapy" type="republish_geom_node" required="true" output="screen" />
 
   <!-- local publishers of republished compressed-transported images from glass -->
     <node name="local_scene_compressed_to_raw" type="republish" pkg="image_transport" output="screen" args="compressed in:=/ball_mover/camera/image raw out:=/ball_mover/camera/image" />
