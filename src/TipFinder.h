@@ -1,11 +1,11 @@
-#ifndef HANDPRESENCESOLVER_H 
-#define HANDPRESENCESOLVER_H
+#ifndef TIPFINDER_H 
+#define TIPFINDER_H
 
 #include <ros/ros.h>
 
 //image transport/conversion libraries
 #include <sensor_msgs/Image.h>
-#include <std_msgs/Bool.h>
+#include <geometry_msgs/Point.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 
@@ -17,21 +17,23 @@
 #include <math.h>
 
 /**
- * Determines if the hand is present in a picture
- * using simple color detection
+ * Finds the tip in the camera's context using color detection
+ * performs a perspective transform on the found point and publishes it
  */
-class HandPresenceSolver {
+class TipFinder {
 
 private:
     ros::NodeHandle n;
-    ros::Publisher hand_presence_pub; //updates the bounding box based upon any object detection
+    ros::Publisher tip_point_pub; //updates the bounding box based upon any object detection
     ros::Subscriber img_sub; //fetches the scene to detect the image
 
     int iLowH, iHighH, iLowS, iHighS, iLowV, iHighV;
     int skipFrame; //skips frames to try and reduce the glass from crashing
+
+    static const cv::Mat H;
  
 public:
-    HandPresenceSolver();
+    TipFinder();
     void img_callback(const sensor_msgs::ImageConstPtr&);
 };
 

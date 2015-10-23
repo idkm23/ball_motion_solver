@@ -1,31 +1,37 @@
-#include "HandPresenceSolver.h"
+#include "TipFinder.h"
 
 using namespace cv;
 
+const Mat TipFinder::H = 
+    (Mat_<double>(3,3) << 
+        0.00254226, 0.00012822, 0.38870149, 
+        -0.00048569, 0.00300231, 0.92131758, 
+        -0.00000103, 0.00000039, 0.00832693);
+
 /**
- * HandPresenceSolver constructor, instantiates ros objects
+ * TipFinder constructor, instantiates ros objects
  */
-HandPresenceSolver::HandPresenceSolver() {
+TipFinder::TipFinder() {
 
     img_sub = n.subscribe<sensor_msgs::Image>
-        ("/ball_mover/camera/image"/*"/usb_cam/image_raw"*/, 10, &HandPresenceSolver::img_callback, this);
-    hand_presence_pub = n.advertise<std_msgs::Bool>("/ball_mover/isHandPresent", 1000);
+        (/*"/ball_mover/camera/image"*/"/usb_cam/image_raw", 10, &TipFinder::img_callback, this);
+    tip_point_pub = n.advertise<geometry_msgs::Point>("/ball_mover/tip_point", 1000);
 
     /* webcam-friendly hsv values 
-    iLowH = 0;
-    iHighH = 65; 
-    iLowS = 46;
-    iHighS = 213;
-    iLowV = 124;
-    iHighV = 141;
+    iLowH = 39;
+    iHighH = 81;
+    iLowS = 65;
+    iHighS = 222;
+    iLowV = 28;
+    iHighV = 255;
     */ 
 
     /* glass-friendly hsv values */ 
-    iLowH = 0;
-    iHighH = 43;
-    iLowS = 46;
-    iHighS = 106;
-    iLowV = 20;
+    iLowH = 39;
+    iHighH = 81;
+    iLowS = 65;
+    iHighS = 222;
+    iLowV = 28;
     iHighV = 255;
     
 
@@ -44,10 +50,10 @@ HandPresenceSolver::HandPresenceSolver() {
 }
 
 /**
- * img_sub's callback, TODO
+ * img_sub's callback, finds the location of a tip every 1 in three frames
  * @param ros_img, image of object in a ros msg
  */
-void HandPresenceSolver::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
+void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
 {
     ROS_INFO("Entered img_callback");
 
@@ -92,8 +98,10 @@ void HandPresenceSolver::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
     double dM10 = oMoments.m10;
     double dArea = oMoments.m00;
     
-    std_msgs::Bool isHandPresent;
-    isHandPresent.data = false;
+    geometry_msgs::Point tip_point;
+    tip_point.x = -1;
+    tip_point.y = -1;
+    tip_point.z = -1;
 
     if (dArea > 62000) {
         //finds the center of the hand
@@ -103,9 +111,14 @@ void HandPresenceSolver::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
         cvtColor(imgThresholded, imgThresholded, COLOR_GRAY2BGR);
 
         ellipse( imgThresholded, Point(posX, posY), Size(10, 10), 360, 0, 360, Scalar(100, 100, 255), 5, 8);
-        isHandPresent.data = true;
+
+        //transform point with H matrix
+        
+        tip_point.x = posX;
+        tip_point.y = posY;
     } 
-    hand_presence_pub.publish(isHandPresent);
+    
+    tip_point_pub.publish(tip_point);
     
     imshow("camera", imgThresholded);
     imshow("camera_raw", cropped_scene);
