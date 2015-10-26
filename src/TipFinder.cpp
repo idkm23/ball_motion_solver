@@ -2,11 +2,18 @@
 
 using namespace cv;
 
+//scale
+const double TipFinder::s = 1.5;
+
+const double TipFinder::XTRANS = 0;
+const double TipFinder::YTRANS = -140;
+
+//warp perspective matrix
 const Mat TipFinder::H = 
     (Mat_<double>(3,3) << 
-        0.00254226, 0.00012822, 0.38870149, 
-        -0.00048569, 0.00300231, 0.92131758, 
-        -0.00000103, 0.00000039, 0.00832693);
+        s * 0.00254226, s * 0.00012822, s * 0.38870149, 
+        s * -0.00048569, s * 0.00300231, s * 0.92131758, 
+        s * -0.00000103, s * 0.00000039, s * 0.00832693);
 
 /**
  * TipFinder constructor, instantiates ros objects
@@ -14,7 +21,7 @@ const Mat TipFinder::H =
 TipFinder::TipFinder() {
 
     img_sub = n.subscribe<sensor_msgs::Image>
-        (/*"/ball_mover/camera/image"*/"/usb_cam/image_raw", 10, &TipFinder::img_callback, this);
+        ("/ball_mover/camera/image"/*"/usb_cam/image_raw"*/, 10, &TipFinder::img_callback, this);
     tip_point_pub = n.advertise<geometry_msgs::Point>("/ball_mover/tip_point", 1000);
 
     /* webcam-friendly hsv values 
@@ -30,7 +37,7 @@ TipFinder::TipFinder() {
     iLowH = 39;
     iHighH = 81;
     iLowS = 65;
-    iHighS = 222;
+    iHighS = 255;
     iLowV = 28;
     iHighV = 255;
     
@@ -73,11 +80,13 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
         return;
     } 
 
-    Mat cropped_scene = cv_ptr->image;
-        
+    Mat raw_scene = cv_ptr->image, warped_scene;
+
+    warpPerspective(raw_scene, warped_scene, H, raw_scene.size());
+
     Mat imgHSV;
 
-    cvtColor(cropped_scene, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
+    cvtColor(warped_scene, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
 
     Mat imgThresholded;
 
@@ -103,7 +112,7 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
     tip_point.y = -1;
     tip_point.z = -1;
 
-    if (dArea > 62000) {
+    if (dArea > 6000) {
         //finds the center of the hand
         int posX = dM10 / dArea;
         int posY = dM01 / dArea;
@@ -114,14 +123,15 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
 
         //transform point with H matrix
         
-        tip_point.x = posX;
-        tip_point.y = posY;
+        tip_point.x = s*(posX + XTRANS);
+        tip_point.y = s*(posY + YTRANS);
     } 
     
     tip_point_pub.publish(tip_point);
     
     imshow("camera", imgThresholded);
-    imshow("camera_raw", cropped_scene);
+    imshow("camera_raw", raw_scene);
+    imshow("camera_warped", warped_scene);
     waitKey(1);
 }
 

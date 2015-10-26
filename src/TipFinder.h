@@ -30,8 +30,15 @@ private:
     int iLowH, iHighH, iLowS, iHighS, iLowV, iHighV;
     int skipFrame; //skips frames to try and reduce the glass from crashing
 
+    /* warp perspective matrix */
     static const cv::Mat H;
+
+    /* scale factor for warp matrix */
+    static const double s;
  
+    /* translational factors */
+    static const double XTRANS, YTRANS;
+
 public:
     TipFinder();
     void img_callback(const sensor_msgs::ImageConstPtr&);
