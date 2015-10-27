@@ -67,11 +67,6 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
 {
     ROS_INFO("Entered img_callback");
 
-    if(skipFrame++ > 3) {
-        skipFrame = 0;
-        return;
-    }    
-
     cv_bridge::CvImagePtr cv_ptr;
     try 
     {   
@@ -85,7 +80,7 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
 
     Mat raw_scene = cv_ptr->image, warped_scene;
     Size warpedSize(raw_scene.size().width + 100, raw_scene.size().height + 100);
-    warpPerspective(raw_scene, warped_scene, H, warpedSize);
+//    warpPerspective(raw_scene, warped_scene, H, warpedSize);
 
 //    cv_ptr->image = warped_scene;
 //    sensor_msgs::ImagePtr warped_msg = cv_ptr->toImageMsg();    
@@ -94,7 +89,7 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
 
     Mat imgHSV;
 
-    cvtColor(warped_scene, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
+    cvtColor(raw_scene, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
 
     Mat imgThresholded;
 
@@ -121,25 +116,31 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
     tip_point.z = NOT_FOUND_COORD;
 
     if (dArea > 6000) {
-        //finds the center of the hand
-        int posX = dM10 / dArea;
-        int posY = dM01 / dArea;
-
-        cvtColor(imgThresholded, imgThresholded, COLOR_GRAY2BGR);
-
-        ellipse( imgThresholded, Point(posX, posY), Size(10, 10), 360, 0, 360, Scalar(100, 100, 255), 5, 8);
-
-        //transform point with H matrix
+        //finds the center of the hand within the raw perspective
+        int raw_x = dM10 / dArea;
+        int raw_y = dM01 / dArea;
+       
+        Mat raw_point = (Mat_<double>(3, 1) << raw_x, raw_y, 1);
         
-        tip_point.x = posX;
-        tip_point.y = posY;
+        //transform point with H matrix
+        Mat warped_point = H*raw_point;        
+        int warped_x = warped_point.at<double>(0, 0) / warped_point.at<double>(2, 0);
+        int warped_y = warped_point.at<double>(1, 0) / warped_point.at<double>(2, 0);        
+ 
+        cvtColor(imgThresholded, imgThresholded, COLOR_GRAY2BGR);
+        ellipse(imgThresholded, Point(warped_x, warped_y), Size(10, 10), 360, 0, 360, Scalar(100, 100, 255), 5, 8);
+        ellipse(warped_scene, Point(warped_x, warped_y), Size(10, 10), 360, 0, 360, Scalar(100, 100, 255), 5, 8);
+        
+        
+        tip_point.x = warped_x;
+        tip_point.y = warped_y;
     } 
     
     tip_point_pub.publish(tip_point);
     
     imshow("camera", imgThresholded);
     imshow("camera_raw", raw_scene);
-    imshow("camera_warped", warped_scene);
+    //imshow("camera_warped", warped_scene);
     waitKey(1);
 }
 

@@ -28,7 +28,6 @@ private:
     ros::Subscriber img_sub; //fetches the scene to detect the image
 
     int iLowH, iHighH, iLowS, iHighS, iLowV, iHighV;
-    int skipFrame; //skips frames to try and reduce the glass from crashing
 
     /* warp perspective matrix */
     static const cv::Mat H;
