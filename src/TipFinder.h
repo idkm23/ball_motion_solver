@@ -24,7 +24,7 @@ class TipFinder {
 
 private:
     ros::NodeHandle n;
-    ros::Publisher tip_point_pub; //updates the bounding box based upon any object detection
+    ros::Publisher tip_point_pub, warped_img_pub; //updates the bounding box based upon any object detection
     ros::Subscriber img_sub; //fetches the scene to detect the image
 
     int iLowH, iHighH, iLowS, iHighS, iLowV, iHighV;
@@ -38,6 +38,7 @@ private:
  
     /* translational factors */
     static const double XTRANS, YTRANS;
+    static const int NOT_FOUND_COORD;
 
 public:
     TipFinder();

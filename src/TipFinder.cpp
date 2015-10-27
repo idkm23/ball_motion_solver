@@ -3,17 +3,19 @@
 using namespace cv;
 
 //scale
-const double TipFinder::s = 1.5;
+const double TipFinder::s = 1;
 
-const double TipFinder::XTRANS = 0;
-const double TipFinder::YTRANS = -140;
+const double TipFinder::XTRANS = -70;
+const double TipFinder::YTRANS = -160;
+
+const int TipFinder::NOT_FOUND_COORD = -1337;
 
 //warp perspective matrix
 const Mat TipFinder::H = 
     (Mat_<double>(3,3) << 
-        s * 0.00254226, s * 0.00012822, s * 0.38870149, 
-        s * -0.00048569, s * 0.00300231, s * 0.92131758, 
-        s * -0.00000103, s * 0.00000039, s * 0.00832693);
+        0.00651836, 0.00032875, 0.38868366, 
+        -0.00124530, 0.00769791, 0.92131758, 
+        -0.00000263, 0.00000101, 0.00832658);
 
 /**
  * TipFinder constructor, instantiates ros objects
@@ -23,6 +25,7 @@ TipFinder::TipFinder() {
     img_sub = n.subscribe<sensor_msgs::Image>
         ("/ball_mover/camera/image"/*"/usb_cam/image_raw"*/, 10, &TipFinder::img_callback, this);
     tip_point_pub = n.advertise<geometry_msgs::Point>("/ball_mover/tip_point", 1000);
+    warped_img_pub = n.advertise<sensor_msgs::Image>("/ball_mover/warped_image", 1000);
 
     /* webcam-friendly hsv values 
     iLowH = 39;
@@ -81,8 +84,13 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
     } 
 
     Mat raw_scene = cv_ptr->image, warped_scene;
+    Size warpedSize(raw_scene.size().width + 100, raw_scene.size().height + 100);
+    warpPerspective(raw_scene, warped_scene, H, warpedSize);
 
-    warpPerspective(raw_scene, warped_scene, H, raw_scene.size());
+//    cv_ptr->image = warped_scene;
+//    sensor_msgs::ImagePtr warped_msg = cv_ptr->toImageMsg();    
+    
+//    warped_img_pub.publish(warped_msg);
 
     Mat imgHSV;
 
@@ -108,9 +116,9 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
     double dArea = oMoments.m00;
     
     geometry_msgs::Point tip_point;
-    tip_point.x = -1;
-    tip_point.y = -1;
-    tip_point.z = -1;
+    tip_point.x = NOT_FOUND_COORD;
+    tip_point.y = NOT_FOUND_COORD;
+    tip_point.z = NOT_FOUND_COORD;
 
     if (dArea > 6000) {
         //finds the center of the hand
@@ -123,8 +131,8 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
 
         //transform point with H matrix
         
-        tip_point.x = s*(posX + XTRANS);
-        tip_point.y = s*(posY + YTRANS);
+        tip_point.x = posX;
+        tip_point.y = posY;
     } 
     
     tip_point_pub.publish(tip_point);
