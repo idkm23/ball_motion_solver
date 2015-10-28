@@ -79,13 +79,13 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
     } 
 
     Mat raw_scene = cv_ptr->image, warped_scene;
-    Size warpedSize(raw_scene.size().width + 100, raw_scene.size().height + 100);
-//    warpPerspective(raw_scene, warped_scene, H, warpedSize);
+    //Size warpedSize(raw_scene.size().width + 100, raw_scene.size().height + 100);
+    //warpPerspective(raw_scene, warped_scene, H, warpedSize);
 
-//    cv_ptr->image = warped_scene;
-//    sensor_msgs::ImagePtr warped_msg = cv_ptr->toImageMsg();    
+    //cv_ptr->image = warped_scene;
+    //sensor_msgs::ImagePtr warped_msg = cv_ptr->toImageMsg();    
     
-//    warped_img_pub.publish(warped_msg);
+    //warped_img_pub.publish(warped_msg);
 
     Mat imgHSV;
 
