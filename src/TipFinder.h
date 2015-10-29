@@ -14,8 +14,6 @@
 #include "opencv2/calib3d/calib3d.hpp"
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include <math.h>
-
 /**
  * Finds the tip in the camera's context using color detection
  * performs a perspective transform on the found point and publishes it
@@ -24,23 +22,33 @@ class TipFinder {
 
 private:
     ros::NodeHandle n;
-    ros::Publisher tip_point_pub, warped_img_pub; //updates the bounding box based upon any object detection
-    ros::Subscriber img_sub; //fetches the scene to detect the image
+    
+    /* updates the ball's location based upon any object detection */
+    ros::Publisher tip_point_pub;
+    
+    /* fetches the scene to detect the image */
+    ros::Subscriber img_sub; 
 
+    /* Thresholding values for color detection */
     int iLowH, iHighH, iLowS, iHighS, iLowV, iHighV;
 
     /* warp perspective matrix */
     static const cv::Mat H;
 
-    /* scale factor for warp matrix */
-    static const double s;
- 
-    /* translational factors */
-    static const double XTRANS, YTRANS;
+    /* Coordinate constant to express when the box is not found */
     static const int NOT_FOUND_COORD;
 
 public:
-    TipFinder();
+    
+    /**
+     * TipFinder constructor, instantiates ros objects
+     */
+    TipFinder(); 
+
+    /**
+     * img_sub's callback, finds the location of a tip every 1 in three frames
+     * @param ros_img, image of object in a ros msg
+     */
     void img_callback(const sensor_msgs::ImageConstPtr&);
 };
 

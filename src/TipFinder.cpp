@@ -2,12 +2,6 @@
 
 using namespace cv;
 
-//scale
-const double TipFinder::s = 1;
-
-const double TipFinder::XTRANS = -70;
-const double TipFinder::YTRANS = -160;
-
 const int TipFinder::NOT_FOUND_COORD = -1337;
 
 //warp perspective matrix
@@ -25,7 +19,6 @@ TipFinder::TipFinder() {
     img_sub = n.subscribe<sensor_msgs::Image>
         ("/ball_mover/camera/image"/*"/usb_cam/image_raw"*/, 10, &TipFinder::img_callback, this);
     tip_point_pub = n.advertise<geometry_msgs::Point>("/ball_mover/tip_point", 1000);
-    warped_img_pub = n.advertise<sensor_msgs::Image>("/ball_mover/warped_image", 1000);
 
     /* webcam-friendly hsv values 
     iLowH = 39;
@@ -41,13 +34,13 @@ TipFinder::TipFinder() {
     iHighH = 81;
     iLowS = 65;
     iHighS = 255;
-    iLowV = 28;
+    iLowV = 78;
     iHighV = 255;
     
 
     namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
 
-    //Create trackbars in "Control" window
+    //Create trackbars in "Control" window to dynamically adjust HSV threshold values
     cvCreateTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
     cvCreateTrackbar("HighH", "Control", &iHighH, 179);
 
@@ -67,6 +60,7 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
 {
     ROS_INFO("Entered img_callback");
 
+    //try-catch converts sensor_msgs::Image to cv::Mat
     cv_bridge::CvImagePtr cv_ptr;
     try 
     {   
@@ -78,16 +72,7 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
         return;
     } 
 
-    Mat raw_scene = cv_ptr->image, warped_scene;
-    //Size warpedSize(raw_scene.size().width + 100, raw_scene.size().height + 100);
-    //warpPerspective(raw_scene, warped_scene, H, warpedSize);
-
-    //cv_ptr->image = warped_scene;
-    //sensor_msgs::ImagePtr warped_msg = cv_ptr->toImageMsg();    
-    
-    //warped_img_pub.publish(warped_msg);
-
-    Mat imgHSV;
+    Mat raw_scene = cv_ptr->image, imgHSV;
 
     cvtColor(raw_scene, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
 
@@ -115,8 +100,9 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
     tip_point.y = NOT_FOUND_COORD;
     tip_point.z = NOT_FOUND_COORD;
 
+    //if the colored mass is large enough, then...
     if (dArea > 6000) {
-        //finds the center of the hand within the raw perspective
+        //finds the center of the tip within the raw perspective
         int raw_x = dM10 / dArea;
         int raw_y = dM01 / dArea;
        
@@ -126,11 +112,10 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
         Mat warped_point = H*raw_point;        
         int warped_x = warped_point.at<double>(0, 0) / warped_point.at<double>(2, 0);
         int warped_y = warped_point.at<double>(1, 0) / warped_point.at<double>(2, 0);        
- 
+
+        //draws the center of the colored mass in binary image 
         cvtColor(imgThresholded, imgThresholded, COLOR_GRAY2BGR);
-        ellipse(imgThresholded, Point(warped_x, warped_y), Size(10, 10), 360, 0, 360, Scalar(100, 100, 255), 5, 8);
-        ellipse(warped_scene, Point(warped_x, warped_y), Size(10, 10), 360, 0, 360, Scalar(100, 100, 255), 5, 8);
-        
+        ellipse(imgThresholded, Point(raw_x, raw_y), Size(10, 10), 360, 0, 360, Scalar(100, 100, 255), 5, 8);
         
         tip_point.x = warped_x;
         tip_point.y = warped_y;
@@ -140,7 +125,6 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
     
     imshow("camera", imgThresholded);
     imshow("camera_raw", raw_scene);
-    //imshow("camera_warped", warped_scene);
     waitKey(1);
 }
 
