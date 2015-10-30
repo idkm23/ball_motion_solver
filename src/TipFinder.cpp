@@ -29,10 +29,10 @@ TipFinder::TipFinder() {
     iHighV = 255;
     */ 
 
-    /* glass-friendly hsv values */ 
-    iLowH = 39;
-    iHighH = 81;
-    iLowS = 65;
+    /* glass-friendly hsv values lime-green */ 
+    iLowH = 28;
+    iHighH = 53;
+    iLowS = 83;
     iHighS = 255;
     iLowV = 78;
     iHighV = 255;
