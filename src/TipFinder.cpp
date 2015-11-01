@@ -30,25 +30,63 @@ TipFinder::TipFinder() {
     */ 
 
     /* glass-friendly hsv values */ 
-    iLowH = 39;
-    iHighH = 81;
-    iLowS = 65;
-    iHighS = 255;
-    iLowV = 78;
-    iHighV = 255;
+    iLowH_tip = 39;
+    iHighH_tip = 81;
+    iLowS_tip = 65;
+    iHighS_tip = 255;
+    iLowV_tip = 78;
+    iHighV_tip = 255;
     
 
-    namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
+    namedWindow("ControlTip", CV_WINDOW_AUTOSIZE); //create a window called "Control"
 
     //Create trackbars in "Control" window to dynamically adjust HSV threshold values
-    cvCreateTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
-    cvCreateTrackbar("HighH", "Control", &iHighH, 179);
+    cvCreateTrackbar("LowH", "Control", &iLowH_tip, 179); //Hue (0 - 179)
+    cvCreateTrackbar("HighH", "Control", &iHighH_tip, 179);
 
-    cvCreateTrackbar("LowS", "Control", &iLowS, 255); //Saturation (0 - 255)
-    cvCreateTrackbar("HighS", "Control", &iHighS, 255);
+    cvCreateTrackbar("LowS", "Control", &iLowS_tip, 255); //Saturation (0 - 255)
+    cvCreateTrackbar("HighS", "Control", &iHighS_tip, 255);
 
-    cvCreateTrackbar("LowV", "Control", &iLowV, 255); //Value (0 - 255)
-    cvCreateTrackbar("HighV", "Control", &iHighV, 255);
+    cvCreateTrackbar("LowV", "Control", &iLowV_tip, 255); //Value (0 - 255)
+    cvCreateTrackbar("HighV", "Control", &iHighV_tip, 255);
+
+}
+
+TipFinder::HandFinder() {
+
+    img_sub = n.subscribe<sensor_msgs::Image>
+        ("/ball_mover/camera/image"/*"/usb_cam/image_raw"*/, 10, &TipFinder::img_callback, this);
+    hand_point_pub = n.advertise<geometry_msgs::Point>("/ball_mover/hand_point", 1000);
+
+   
+    /* webcam-friendly hsv values 
+    iLowH = 0;
+    iHighH = 65; 
+    iLowS = 46;
+    iHighS = 213;
+    iLowV = 124;
+    iHighV = 141;
+    */ 
+
+    /* glass-friendly hsv values */ 
+    iLowH_hand = 0;
+    iHighH_hand = 43;
+    iLowS_hand = 46;
+    iHighS_hand = 106;
+    iLowV_hand = 20;
+    iHighV_hand = 255; 
+
+    namedWindow("ControlHand", CV_WINDOW_AUTOSIZE); //create a window called "Control"
+
+    //Create trackbars in "Control" window to dynamically adjust HSV threshold values
+    cvCreateTrackbar("LowH", "Control", &iLowH_hand, 179); //Hue (0 - 179)
+    cvCreateTrackbar("HighH", "Control", &iHighH_hand, 179);
+
+    cvCreateTrackbar("LowS", "Control", &iLowS_hand, 255); //Saturation (0 - 255)
+    cvCreateTrackbar("HighS", "Control", &iHighS_hand, 255);
+
+    cvCreateTrackbar("LowV", "Control", &iLowV_hand, 255); //Value (0 - 255)
+    cvCreateTrackbar("HighV", "Control", &iHighV_hand, 255);
 
 }
 

@@ -30,7 +30,8 @@ private:
     ros::Subscriber img_sub; 
 
     /* Thresholding values for color detection */
-    int iLowH, iHighH, iLowS, iHighS, iLowV, iHighV;
+    int iLowH_tip, iHighH_tip, iLowS_tip, iHighS_tip, iLowV_tip, iHighV_tip;
+    int iLowH_hand, iHighH_hand, iLowS_hand, iHighS_hand, iLowV_hand, iHighV_hand;
 
     /* warp perspective matrix */
     static const cv::Mat H;
