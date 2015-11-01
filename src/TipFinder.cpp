@@ -29,13 +29,14 @@ TipFinder::TipFinder() {
     iHighV = 255;
     */ 
 
-    /* glass-friendly hsv values */ 
-    iLowH_tip = 39;
-    iHighH_tip = 81;
-    iLowS_tip = 65;
-    iHighS_tip = 255;
-    iLowV_tip = 78;
-    iHighV_tip = 255;
+
+    /* glass-friendly hsv values lime-green */ 
+    iLowH = 28;
+    iHighH = 53;
+    iLowS = 83;
+    iHighS = 255;
+    iLowV = 78;
+    iHighV = 255;
     
 
     namedWindow("ControlTip", CV_WINDOW_AUTOSIZE); //create a window called "Control"
