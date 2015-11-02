@@ -150,7 +150,7 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
 
     Mat imgThresholded;
     inRange(imgHSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), imgThresholded);
-    //Threshold the imagebbs.com/
+    //Threshold the image/
     
     geometry_msgs::Point tip_point = get_centroid(imgThresholded, 6000);
 
