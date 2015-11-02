@@ -3,7 +3,7 @@
 using namespace cv;
 
 const int TipFinder::NOT_FOUND_COORD = -1337;
-const bool TipFinder::FULL_DETECTION = true;
+const bool TipFinder::FULL_DETECTION = true; // true if using hand detection
 
 //warp perspective matrix
 const Mat TipFinder::H = 
@@ -116,11 +116,10 @@ geometry_msgs::Point TipFinder::get_velocity() {
 
     if (point_tracer.size()<=1) return predicted;
     // otherwise, compute the average velocity, pixels/frame
-    velocity.x = std::abs ( (point_tracer.back().x - point_tracer.front().x) )
-                            / (float)(point_tracer.size() - 1);
-    velocity.y = std::abs ( (point_tracer.back().y - point_tracer.front().y) )
-                            / (float)(point_tracer.size() - 1);
-    
+    velocity.x = (point_tracer.back().x - point_tracer.front().x)
+                            / (point_tracer.size() - 1);
+    velocity.y = (point_tracer.back().y - point_tracer.front().y)
+                            / (point_tracer.size() - 1);
    
     return velocity;
 }
@@ -151,29 +150,32 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
 
     Mat imgThresholded;
     inRange(imgHSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), imgThresholded);
-    //Threshold the image
+    //Threshold the imagebbs.com/
     
     geometry_msgs::Point tip_point = get_centroid(imgThresholded, 6000);
 
     bool reliable_detection = false;
-    if (tip_point.x>-1 && tip_point.y>-1) 
-        reliable_detection = true;
 
-/*
     if (tip_point.x>-1 && tip_point.y>-1){
         reliable_detection = true;
 
-        if (point_tracer.size() >=5) && n_missing.data<5){
-            geometry_msgs::Point previous_velocity = get_velocity();
-            if ( std::abs(tip_point.x-point_tracer.back().x) > 300*previous_velocity.x
-                || std::abs(tip_point.y-point_tracer.back().y) > 300*previous_velocity.y) {
+        if (point_tracer.size()>=5 && n_missing.data<10){
+            // if missing detections are not too many, we want to regulate their positions
+            // because if the positions jump too much, they might not really be the object we want.
+            
+            // use l1 norm (absolute values) to regulate
+            if ( std::abs(tip_point.x-point_tracer.back().x)
+                 +std::abs(tip_point.y-point_tracer.back().y) > 50 ) {
                 reliable_detection = false;
-                tip_point.x = NOT_FOUND_COORD;
-                tip_point.y = NOT_FOUND_COORD;
+                
+                //geometry_msgs::Point velocity = get_velocity();
+                tip_point.x = point_tracer.back().x; //+ velocity.x;
+                tip_point.y = point_tracer.back().x; //+ velocity.y;
             }
         }
+
     }
-*/
+
     if (reliable_detection)
         n_missing.data = 0; // reset missing counter
     else
@@ -181,24 +183,25 @@ void TipFinder::img_callback(const sensor_msgs::ImageConstPtr& ros_img)
 
     if (FULL_DETECTION && ! reliable_detection ) {
         /* perform hand dectection */
-        Mat imgThresholded;
+        Mat imgThresholded_hand;
 
-        inRange(imgHSV, Scalar(iLowH_hand, iLowS_hand, iLowV_hand), Scalar(iHighH_hand, iHighS_hand, iHighV_hand), imgThresholded);
+        inRange(imgHSV, Scalar(iLowH_hand, iLowS_hand, iLowV_hand), Scalar(iHighH_hand, iHighS_hand, iHighV_hand), imgThresholded_hand);
         //Threshold the image
 
-        geometry_msgs::Point hand_point = get_centroid(imgThresholded, 62000);
+        geometry_msgs::Point hand_point = get_centroid(imgThresholded_hand, 62000);
         
-        // Set hand point as tip point for now
-        tip_point = hand_point;
+        // Set hand point as tip point, if it is reasonable
+        if ( std::abs(hand_point.x-point_tracer.back().x)+std::abs(hand_point.y-point_tracer.back().y) < 50)
+            tip_point = hand_point;
     }
     
-/*
+
     if (tip_point.x>-1 && tip_point.y>-1) 
         point_tracer.push(tip_point);
     
     if (point_tracer.size()>5)
         point_tracer.pop();
-*/
+
 
     tip_point_pub.publish(tip_point);
 
