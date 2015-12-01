@@ -111,6 +111,7 @@ include_directories(
  add_executable(hand_presence_solver_node src/hand_presence_solver_node.cpp)
  add_executable(republish_geom_node src/republish_geom_node.cpp)
  add_executable(tip_finder_node src/tip_finder_node.cpp)
+ add_executable(odg_tip_finder_node src/odg_tip_finder_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -118,6 +119,7 @@ include_directories(
  add_dependencies(hand_presence_solver_node ${catkin_EXPORTED_TARGETS})
  add_dependencies(republish_geom_node ${catkin_EXPORTED_TARGETS})
  add_dependencies(tip_finder_node ${catkin_EXPORTED_TARGETS})
+ add_dependencies(odg_tip_finder_node ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(ball_motion_solver_node
@@ -130,6 +132,9 @@ include_directories(
    ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
  )
  target_link_libraries(tip_finder_node
+   ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
+ )
+ target_link_libraries(odg_tip_finder_node
    ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
  )
  
