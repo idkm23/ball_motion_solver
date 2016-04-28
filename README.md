@@ -1,8 +1,10 @@
 # ball_motion_solver
 
-C++ Component of the odg ball demo. The program recieves images from the ODG through ros  
+C++ component of the odg ball demo. The program recieves images from the ODG through ros  
 and then determines where the ball is and sends that coordinate back to the glass, that way the glass
 doesn't have to do as much processing.  
+  
+Android component: https://github.com/idkm23/odgboxtherapy
   
 Setup:  
 ```
