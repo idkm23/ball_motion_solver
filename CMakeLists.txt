@@ -107,15 +107,21 @@ include_directories(
 
 ## Declare a cpp executable
  add_executable(odg_tip_finder_node src/odg_tip_finder_node.cpp)
+ add_executable(republish_geom_node src/republish_geom_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
  add_dependencies(odg_tip_finder_node ${catkin_EXPORTED_TARGETS})
+ add_dependencies(republish_geom_node ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(odg_tip_finder_node
    ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
  )
+ target_link_libraries(republish_geom_node
+   ${catkin_LIBRARIES} ${OpenCV_LIBRARIES}
+ )
+ 
  
 #############
 ## Install ##
