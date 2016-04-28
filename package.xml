@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>box_therapy</name>
+  <name>ball_motion_solver</name>
   <version>0.0.0</version>
   <description>The ball_motion_solver package</description>
 

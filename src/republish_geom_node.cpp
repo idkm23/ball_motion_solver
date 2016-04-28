@@ -2,6 +2,9 @@
 #include <myo_raw/Gesture.h>
 #include <std_msgs/Int32.h>
 
+// This file is only necessary because it is difficult to make custom messages in rosjava
+// Due to my incompetence, I quickly wrote this republisher to avoid the issue
+
 ros::Publisher repub;
 
 void republish_callback(const myo_raw::Gesture&);
@@ -22,6 +25,9 @@ int main( int argc, char** argv )
     return 0;
 }
 
+// The gesture message has some other fancy attributes, but the only thing needed
+// is the gesture number. Rather than make the Gesture message in rosjava, I just sent it
+// through an integer-typed topic
 void republish_callback(const myo_raw::Gesture& msg)
 {
     ROS_INFO("trying to post");
