@@ -2,6 +2,7 @@
 
     <node name="odg_tip_finder_node" pkg="ball_motion_solver" type="odg_tip_finder_node" required="true" output="screen" />
     <node name="republish_geometry" pkg="ball_motion_solver" type="republish_geom_node" required="true" output="screen" />
+   <!-- <node name="myo_node" pkg="myo_raw" type="myo_node" required="true" /> -->
 
   <!-- local publishers of republished compressed-transported images from glass -->
 
